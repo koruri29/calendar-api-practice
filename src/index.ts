@@ -2,7 +2,7 @@ import { google } from "googleapis";
 import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
-import * as readline from "readline";
+import readline from "node:readline/promises";
 import { fileURLToPath } from "url";
 import { stdin as input, stdout as output } from "node:process";
 
@@ -12,7 +12,7 @@ dotenv.config()
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const SCOPES = ["https://www.googleapis.com/auth/calendar.calenderlist.readonly"]
+const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 const TOKEN_PATH = path.join(__dirname, "../token.json")
 
 
@@ -39,16 +39,16 @@ async function getAccessToken(oAuth2Client: any) {
 
   const rl = readline.createInterface({input, output})
 
-  rl.question("Enter the code from that page here: ", async (code) => {
-    rl.close()
-    const { tokens } = await oAuth2Client.getToken(code)
-    oAuth2Client.setCredentials(tokens)
+  const code = await rl.question("Enter the code from that page here: ")
+  rl.close()
 
-    // token.json に保存
-    const TOKEN_PATH = path.join(__dirname, "token.json");
-    fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens, null, 2))
-    console.log('Token stored to token.json')
-  })
+  const { tokens } = await oAuth2Client.getToken(code)
+  oAuth2Client.setCredentials(tokens)
+
+  // token.json に保存
+  const TOKEN_PATH = path.join(__dirname, "token.json");
+  fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens, null, 2))
+  console.log('Token stored to token.json')
 }
 
 async function listUpcomingEvents(oAuth2Client: any) {
