@@ -34,7 +34,7 @@ export function validateCreateInputs(inputs: RawCreateValues): ValidationResult 
     }
   }
 
-  if (inputs.endDate && validateDate(inputs.endDate)) {
+  if (inputs.endDate && !validateDate(inputs.endDate)) {
     return {
       ok: false,
       message: '終了日の形式が不正です',
@@ -48,6 +48,13 @@ export function validateCreateInputs(inputs: RawCreateValues): ValidationResult 
         ok: false,
         message: validated.message ?? '終了時刻が不正です',
       }
+    }
+  }
+
+  if (!inputs.startTime && inputs.endTime) {
+    return {
+      ok: false,
+      message: '終了時刻を入力する場合、開始時刻は必須です'
     }
   }
 

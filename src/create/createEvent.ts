@@ -8,11 +8,8 @@ import type { CreateOptions } from "../types";
 export async function createEvent(auth: OAuth2Client, event: CreateOptions) {
   const calendar = google.calendar({ version: 'v3', auth })
 
-  if (
-    (!event.start.date && !event.start.datetime) ||
-    (!event.end.date && !event.end.datetime)
-  ) {
-    throw new Error("開始日/終了日が不正です")
+  if ((event.start.date && event.end.dateTime) || (event.start.dateTime && event.end.date)) {
+    throw new Error("開始日と終了日が同じ型である必要があります");
   }
 
   const params: calendar_v3.Params$Resource$Events$Insert
