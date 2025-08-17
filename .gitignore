@@ -8,6 +8,7 @@ dist/
 # Environment variables and credentials
 .env
 token.json
+credentials.json
 
 # Logs
 npm-debug.log*
