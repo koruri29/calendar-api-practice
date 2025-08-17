@@ -12,6 +12,8 @@
     "types": [],
     "moduleResolution": "Node",
     "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
