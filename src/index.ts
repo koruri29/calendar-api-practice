@@ -4,8 +4,9 @@ import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { createEvent } from "./create/createEvent.ts";
 import type { RawCreateValues } from "./types/create.ts";
-import { validateCreateInputs } from "./create/validateCreateInputs.ts";
+import { validateCreateInput } from "./create/validateCreateInput.ts";
 import { formatCreateEvent } from "./create/formatCreateEvent.ts";
+import { applyDefault } from "./create/applyDefault.ts";
 
 
 // .env呼び出し
@@ -64,27 +65,27 @@ async function main() {
     // 登録
     const rl2 = readline.createInterface({ input, output })
 
-    const inputs: RawCreateValues = {}
+    const rawInput: RawCreateValues = {}
 
     console.log('予定の登録を行います')
-    inputs.summary = await rl2.question('タイトル(必須): ')
-    inputs.description = await rl2.question('内容: ')
-    inputs.location = await rl2.question('場所: ')
-    inputs.startDate = await rl2.question(`開始日(必須、yyyy-mm-dd): `)
-    inputs.startTime = await rl2.question('開始時刻(HH:mm): ')
-    inputs.endDate = await rl2.question('終了日(yyyy-mm-dd): ')
-    inputs.endTime = await rl2.question('終了時刻(HH:mm): ')
+    rawInput.summary = await rl2.question('タイトル(必須): ')
+    rawInput.description = await rl2.question('内容: ')
+    rawInput.location = await rl2.question('場所: ')
+    rawInput.startDate = await rl2.question(`開始日(必須、yyyy-mm-dd): `)
+    rawInput.startTime = await rl2.question('開始時刻(HH:mm): ')
+    rawInput.endDate = await rl2.question('終了日(yyyy-mm-dd): ')
+    rawInput.endTime = await rl2.question('終了時刻(HH:mm): ')
 
     rl2.close()
 
-
-    const validated = validateCreateInputs(inputs)
+    const inputWithDefault = applyDefault(rawInput)
+    const validated = validateCreateInput(inputWithDefault)
     if (!validated.ok) {
       console.log('入力値が不正です。', validated.message || '')
       return
     }
 
-    const formattedEvent = formatCreateEvent(inputs)
+    const formattedEvent = formatCreateEvent(inputWithDefault)
     await createEvent(authClient, formattedEvent)
 
   } catch (error) {
