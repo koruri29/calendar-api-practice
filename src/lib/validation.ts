@@ -3,12 +3,14 @@
  * @param dateStr - 判定したい日付文字列
  * @returns 成功時は { ok: true, date: Date }、失敗時は { ok: false, msg: string }
  */
-export function validateDate(dateStr: string): boolean {
+export function validateDate(dateStr: string):
+  { ok: boolean, message?: string}
+{
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) {
-    return false
+    return { ok: false, message: '日付の形式が不正です' }
   }
-  return true
+  return { ok: true }
 }
 
 /**
@@ -42,4 +44,67 @@ export function validateTime(timeStr: string):
   }
 
   return { ok: true }
+}
+
+
+// 日付及び時刻の比較結果型
+export type TemporalRelation = "Same" | "Before" | "After";
+
+type DateCompareResult =
+  | { ok: false; message: string }
+  | { ok: true; relation: TemporalRelation };
+
+/**
+ * 日付の比較を行う
+ * @param baseDate yyyy-mm-dd形式
+ * @param targetDate 同上
+ * @returns
+ */
+export function compareDates(
+  baseDate: string,
+  targetDate: string
+): DateCompareResult {
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+  // 形式チェック
+  if (!dateRegex.test(baseDate) || !dateRegex.test(targetDate)) {
+    return { ok: false, message: "日付の形式が不正です (yyyy-mm-dd)" };
+  }
+
+  const base = new Date(baseDate);
+  const target = new Date(targetDate);
+
+  if (isNaN(base.getTime()) || isNaN(target.getTime())) {
+    return { ok: false, message: "日付の値が不正です" };
+  }
+
+  if (base.getTime() === target.getTime()) {
+    return { ok: true, relation: "Same" };
+  }
+  if (base.getTime() < target.getTime()) {
+    return { ok: true, relation: "Before" };
+  }
+  return { ok: true, relation: "After" };
+}
+
+/**
+ * 日時の比較を行う
+ * @param dateTime1 yyyy-mm-ddTHH:ii:ss形式
+ * @param dateTime2 同上
+ * @returns
+ */
+export function compareDateTimes(
+  dateTime1: string, // e.g. "2025-08-20T12:00"
+  dateTime2: string  // e.g. "2025-08-20T15:00"
+): { ok: boolean; relation?: TemporalRelation } {
+  const dt1 = new Date(dateTime1);
+  const dt2 = new Date(dateTime2);
+
+  if (isNaN(dt1.getTime()) || isNaN(dt2.getTime())) {
+    return { ok: false };
+  }
+
+  if (dt1.getTime() === dt2.getTime()) return { ok: true, relation: "Same" };
+  if (dt1.getTime() < dt2.getTime()) return { ok: true, relation: "Before" };
+  return { ok: true, relation: "After" };
 }

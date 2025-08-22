@@ -1,4 +1,5 @@
-export interface ValidationResult {
+export interface ValidationResult<T> {
   ok: boolean
+  validated: T
   message?: string
 }
