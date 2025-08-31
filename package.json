@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "dotenv": "^17.2.1",
-    "googleapis": "^156.0.0"
+    "googleapis": "^156.0.0",
+    "inquirer": "^12.9.4"
   }
 }

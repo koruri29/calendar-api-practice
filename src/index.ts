@@ -1,98 +1,84 @@
 import * as dotenv from "dotenv";
+import { OAuth2Client } from "google-auth-library";
+import readline from "node:readline";
 import { authorize } from "./auth/authorize.ts";
-import readline from "node:readline/promises";
-import { stdin as input, stdout as output } from "node:process";
-import { createEvent } from "./create/createEvent.ts";
-import type { RawCreateValues } from "./types/create.ts";
-import { validateCreateInput } from "./create/validateCreateInput.ts";
-import { formatCreateEvent } from "./create/formatCreateEvent.ts";
-import { applyDefault } from "./create/applyDefault.ts";
-import { listUpcomingEvents, type ListOptions } from "./get/listUpcomingEvents.ts";
-import { getToday } from "./lib/dateTime.ts";
+import inquirer from "inquirer";
+import { DEFAULT_MAX_RESULTS, MENUS } from "./const.ts";
+import { createEventFlow } from "./create/flow.ts";
+import { listEventsFlow } from "./get/flow.ts";
+import { sleep } from "./lib/utils.ts";
 
 
 // .env呼び出し
 dotenv.config()
 
 
-const DEFAULT_MAX_RESULTS = 10
-
 async function main() {
   try {
+    // 認証
     const authClient = await authorize()
 
+    // メイン処理
+    let exit = false;
 
-    // 参照
-    const options: ListOptions = {}
-
-    const rl = readline.createInterface({ input, output })
-    const advanced = await rl.question('詳細検索を行いますか？[no]: ')
-
-    if (
-      advanced === 'y' ||
-      advanced === 'Y' ||
-      advanced === 'yes' ||
-      advanced === 'YES'
-    ) {
-      const today = getToday()
-      const startStr = await rl.question(`取得開始日[${today}]: `)
-      const endStr = await rl.question('取得終了日[none]: ')
-      const maxStr = await rl.question('最大件数[10]: ')
-      const keyword = await rl.question('キーワード[none]: ')
-
-      if (startStr) {
-        const inputDate = new Date(startStr)
-        if (!isNaN(inputDate.getTime())) {
-          options.timeMin = inputDate
-        }
-      }
-      if (endStr) {
-        const inputDate = new Date(endStr)
-        if (!isNaN(inputDate.getTime())) {
-          options.timeMax = inputDate
-        }
-      }
-      if (maxStr) {
-        const max = options.maxResults = parseInt(maxStr, 10)
-        options.maxResults = isNaN(max) ? DEFAULT_MAX_RESULTS : max
-      }
-      if (keyword) options.q = keyword
+    while (!exit) {
+      const choice = await mainMenu()
+      exit = await run(authClient, choice)
     }
-
-    rl.close()
-
-    await listUpcomingEvents(authClient, options)
-
-
-    // 登録
-    const rl2 = readline.createInterface({ input, output })
-
-    const rawInput: RawCreateValues = {}
-
-    console.log('予定の登録を行います')
-    rawInput.summary = await rl2.question('タイトル(必須): ')
-    rawInput.description = await rl2.question('内容: ')
-    rawInput.location = await rl2.question('場所: ')
-    rawInput.startDate = await rl2.question(`開始日(必須、yyyy-mm-dd): `)
-    rawInput.startTime = await rl2.question('開始時刻(HH:mm): ')
-    rawInput.endDate = await rl2.question('終了日(yyyy-mm-dd): ')
-    rawInput.endTime = await rl2.question('終了時刻(HH:mm): ')
-
-    rl2.close()
-
-    const inputWithDefault = applyDefault(rawInput)
-    const validated = validateCreateInput(inputWithDefault)
-    if (!validated.ok) {
-      console.log('入力値が不正です。', validated.message || '')
-      return
-    }
-
-    const formattedEvent = formatCreateEvent(inputWithDefault)
-    await createEvent(authClient, formattedEvent)
-
   } catch (error) {
     console.error(error)
   }
+}
+
+async function mainMenu(): Promise<string> {
+  const answer = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'menu',
+      message: '操作を選択してください',
+      choices: [
+        { name: '予定の登録', value: MENUS.CREATE },
+        { name: '予定の確認', value: MENUS.LIST },
+        { name: '終了', value: MENUS.EXIT },
+      ]
+    }
+  ])
+
+  return answer.menu
+}
+
+async function run(authClient: OAuth2Client, choice: string, duration: number = 500): Promise<boolean> {
+  let exit = false
+
+  switch (choice) {
+    case MENUS.CREATE:
+      await createEventFlow(authClient)
+      await pressEnterToContinue()
+      break
+    case MENUS.LIST:
+      await listEventsFlow(authClient, DEFAULT_MAX_RESULTS)
+      await pressEnterToContinue()
+      break
+    case MENUS.EXIT:
+      exit = true
+      break
+  }
+
+  return exit
+}
+
+async function pressEnterToContinue() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  await new Promise<void>(resolve => {
+    rl.question("\nEnterキーを押して続行...", () => {
+      rl.close();
+      resolve();
+    });
+  });
 }
 
 main()
