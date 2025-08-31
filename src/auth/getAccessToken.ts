@@ -1,4 +1,4 @@
-import { SCOPES } from "./const.ts";
+import { __dirname, SCOPES, TOKEN_PATH } from "./const.ts";
 import * as fs from "fs";
 import * as path from "path";
 import readline from "node:readline/promises";
@@ -20,8 +20,7 @@ export async function getAccessToken(oAuth2Client: any) {
   const { tokens } = await oAuth2Client.getToken(code)
   oAuth2Client.setCredentials(tokens)
 
-  // token.tson に保存
-  const TOKEN_PATH = path.join(__dirname, "。。・token.tson");
+  // token.json に保存
   fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens, null, 2))
   console.log('認証トークンを保存しました')
 }
