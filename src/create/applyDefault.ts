@@ -1,5 +1,5 @@
 import { addOneHour, getToday } from "../lib/dateTime.ts";
-import type { RawCreateValues } from "../types";
+import type { RawCreateValues } from "../types/index.ts";
 
 
 export function applyDefault(input: RawCreateValues): RawCreateValues {
@@ -9,7 +9,7 @@ export function applyDefault(input: RawCreateValues): RawCreateValues {
     const plusOneHour = addOneHour(`${input.startDate}T${input.startTime}`)
     const [date, time] = plusOneHour.split('T');
     input.endDate = date ?? ''
-    input.endTime = time ?? ''
+    input.endTime = time?.slice(0, 5) ?? ''
   }
 
   return input

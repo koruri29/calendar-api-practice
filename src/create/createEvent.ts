@@ -1,6 +1,6 @@
 import { calendar_v3, google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
-import type { CreateOptions } from "../types";
+import type { CreateOptions } from "../types/index.ts";
 
 
 

@@ -2,7 +2,7 @@ import type {
   CreateOptions,
   CreateDateOptions,
   RawCreateValues
-} from "../types";
+} from "../types/index.ts";
 
 
 export function formatCreateEvent(inputs: RawCreateValues): CreateOptions {
