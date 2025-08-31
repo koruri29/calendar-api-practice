@@ -1,5 +1,5 @@
 import { addOneHour, getToday } from "../lib/dateTime.ts";
-import type { RawCreateValues } from "../types";
+import type { RawCreateValues } from "../types/index.ts";
 
 
 export function applyDefault(input: RawCreateValues): RawCreateValues {
