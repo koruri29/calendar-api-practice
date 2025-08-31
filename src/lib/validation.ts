@@ -18,9 +18,10 @@ export function validateDate(dateStr: string):
  * @param timeStr - 判定したい時刻文字列
  * @returns 成功時は { ok: true, hour: number, minute: number }、失敗時は { ok: false, msg: string }
  */
-export function validateTime(timeStr: string):
+export function validateTime(rawTimeStr: string):
   {ok: boolean,  message?: string}
 {
+  const timeStr = rawTimeStr.trim()
   // 空文字は無効
   if (!timeStr) {
     return { ok: false, message: "時刻が空です" }

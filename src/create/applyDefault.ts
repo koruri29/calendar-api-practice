@@ -9,7 +9,7 @@ export function applyDefault(input: RawCreateValues): RawCreateValues {
     const plusOneHour = addOneHour(`${input.startDate}T${input.startTime}`)
     const [date, time] = plusOneHour.split('T');
     input.endDate = date ?? ''
-    input.endTime = time ?? ''
+    input.endTime = time?.slice(0, 5) ?? ''
   }
 
   return input
