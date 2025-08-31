@@ -7,3 +7,6 @@ export const MENUS = {
   LIST: 'list',
   EXIT: 'exit',
 }
+
+
+export const INVALID_VALUE = '__無効な値です__'
