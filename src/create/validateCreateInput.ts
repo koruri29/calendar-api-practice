@@ -109,11 +109,11 @@ export function validateCreateInput(input: RawCreateValues): ValidationResult<Ra
         message: '日時の入力が不正です'
       }
     }
-    if (dateTimeResult.relation === 'After') {
+    if (dateTimeResult.relation !== 'Before') {
       return {
         ok: false,
         validated: input,
-        message: '開始日時＞終了日時になっています'
+        message: '開始日時≧終了日時になっています'
       }
     }
   }
